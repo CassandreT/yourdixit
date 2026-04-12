@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body, #root {
+    height: 100%;
+    min-height: 100vh;
+    background: #1a0f2e;
+    color: #fef0c8;
+    font-family: 'Crimson Text', Georgia, serif;
+  }
+}
+
+/* ── LIVING BORDERS — @property rotating conic-gradient ── */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-spin {
+  to { --angle: 360deg; }
+}
+
+.card-glow {
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--angle),
+    #f5c842, #c084fc, #f5c842aa, #1a0f2e, #f5c842
+  );
+  animation: border-spin 4s linear infinite;
+  z-index: -1;
+}
+
+.card-glow:hover::before {
+  animation-duration: 1.5s;
+}
+
+/* ── FIREFLY CANVAS ── */
+#firefly-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Utility ── */
+.font-display { font-family: 'Cinzel Decorative', serif; }
+
+/* ── Upload zone ── */
+.upload-zone {
+  border: 2px dashed #f5c84266;
+  transition: border-color 0.2s, background 0.2s;
+}
+.upload-zone:hover, .upload-zone.dragging {
+  border-color: #f5c842;
+  background: #f5c84210;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1a0f2e; }
+::-webkit-scrollbar-thumb { background: #f5c84255; border-radius: 3px; }
