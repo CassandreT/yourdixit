@@ -1,32 +1,22 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import MagicButton from '../components/MagicButton.jsx';
-import { isFirebaseConfigured } from '../firebase.js';
 import * as firebaseGame from '../utils/firebaseGame.js';
-import * as localGame from '../utils/localGame.js';
 
 export default function LandingScreen({ onEnter }) {
-  const [mode, setMode]         = useState(null); // 'host' | 'join'
-  const [backend, setBackend]   = useState(null); // 'local' | 'remote'
-  const [name, setName]         = useState('');
-  const [code, setCode]         = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-
-  const firebaseReady = isFirebaseConfigured();
-
-  function getBackend() {
-    return (backend === 'remote' && firebaseReady) ? firebaseGame : localGame;
-  }
+  const [mode, setMode]       = useState(null); // 'host' | 'join'
+  const [name, setName]       = useState('');
+  const [code, setCode]       = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
 
   async function handleHost() {
     if (!name.trim()) return setError('Enter your name first');
     setLoading(true); setError('');
     try {
-      const game = getBackend();
-      await game.signInAnon();
-      const roomCode = await game.createRoom(name.trim());
-      onEnter({ role: 'host', name: name.trim(), code: roomCode, backend: backend || 'local' });
+      await firebaseGame.signInAnon();
+      const roomCode = await firebaseGame.createRoom(name.trim());
+      onEnter({ role: 'host', name: name.trim(), code: roomCode, backend: 'remote' });
     } catch (e) {
       setError(e.message);
     } finally { setLoading(false); }
@@ -37,19 +27,12 @@ export default function LandingScreen({ onEnter }) {
     if (!code.trim()) return setError('Enter the room code');
     setLoading(true); setError('');
     try {
-      const game = getBackend();
-      await game.signInAnon();
-      await game.joinRoom(code.trim().toUpperCase(), name.trim());
-      onEnter({ role: 'player', name: name.trim(), code: code.trim().toUpperCase(), backend: backend || 'local' });
+      await firebaseGame.signInAnon();
+      await firebaseGame.joinRoom(code.trim().toUpperCase(), name.trim());
+      onEnter({ role: 'player', name: name.trim(), code: code.trim().toUpperCase(), backend: 'remote' });
     } catch (e) {
       setError(e.message);
     } finally { setLoading(false); }
-  }
-
-  function startFlow(selectedBackend, selectedMode) {
-    setBackend(selectedBackend);
-    setMode(selectedMode);
-    setError('');
   }
 
   return (
@@ -75,7 +58,7 @@ export default function LandingScreen({ onEnter }) {
           Your Dixit
         </h1>
         <p className="font-body italic text-xl md:text-2xl text-[#fef0c8]/80">
-          The game of Dixit, but with your pictures. Play remotely or in-person.
+          The game of Dixit, but with your pictures. Play remotely.
         </p>
 
         {/* Rules summary */}
@@ -106,75 +89,30 @@ export default function LandingScreen({ onEnter }) {
       >
         {/* Mode selector */}
         {!mode && (
-          <div className="flex flex-col gap-3">
-            {/* Local play */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🌿</span>
-                <div>
-                  <p className="font-display text-accent text-sm">Local Play</p>
-                  <p className="text-dim/60 text-xs font-body">Works instantly — pass the device or open multiple tabs</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <MagicButton variant="gold" onClick={() => startFlow('local', 'host')} className="flex-1 py-2.5 text-sm">
-                  ✦ Host
-                </MagicButton>
-                <MagicButton variant="ghost" onClick={() => startFlow('local', 'join')} className="flex-1 py-2.5 text-sm">
-                  Join
-                </MagicButton>
-              </div>
-            </div>
-
-            {/* Remote play */}
-            <div className={`rounded-2xl p-4 space-y-3 border ${firebaseReady ? 'bg-white/5 border-white/10' : 'bg-white/[0.02] border-white/5 opacity-60'}`}>
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🌐</span>
-                <div>
-                  <p className="font-display text-accent text-sm">Remote Play</p>
-                  <p className="text-dim/60 text-xs font-body">
-                    {firebaseReady
-                      ? 'Play across different devices & locations'
-                      : 'Requires Firebase setup — see src/firebase.js'}
-                  </p>
-                </div>
-              </div>
-              {firebaseReady ? (
-                <div className="flex gap-2">
-                  <MagicButton variant="violet" onClick={() => startFlow('remote', 'host')} className="flex-1 py-2.5 text-sm">
-                    ✦ Host
-                  </MagicButton>
-                  <MagicButton variant="ghost" onClick={() => startFlow('remote', 'join')} className="flex-1 py-2.5 text-sm">
-                    Join
-                  </MagicButton>
-                </div>
-              ) : (
-                <p className="text-xs font-body text-dim/50 italic text-center py-1">
-                  Add your Firebase config to enable remote play
-                </p>
-              )}
-            </div>
+          <div className="flex gap-3">
+            <MagicButton variant="gold" onClick={() => { setMode('host'); setError(''); }} className="flex-1 py-4 text-base">
+              ✦ Host a Game
+            </MagicButton>
+            <MagicButton variant="ghost" onClick={() => { setMode('join'); setError(''); }} className="flex-1 py-4 text-base">
+              Join a Game
+            </MagicButton>
           </div>
         )}
 
         {/* Name / code form */}
         {mode && (
           <motion.div
-            key={mode + backend}
+            key={mode}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-4"
           >
             <div className="flex items-center gap-3 mb-2">
-              <button onClick={() => { setMode(null); setBackend(null); setError(''); }}
+              <button onClick={() => { setMode(null); setError(''); }}
                 className="text-dim hover:text-[#fef0c8] transition-colors text-sm">← back</button>
               <h2 className="font-display text-accent text-lg">
                 {mode === 'host' ? '✦ Host a Game' : '🌿 Join a Game'}
               </h2>
-              <span className={`ml-auto text-xs px-2 py-0.5 rounded-full font-display
-                ${backend === 'remote' ? 'bg-violet/20 text-violet' : 'bg-accent/15 text-accent'}`}>
-                {backend === 'remote' ? 'remote' : 'local'}
-              </span>
             </div>
 
             <div>
@@ -214,7 +152,7 @@ export default function LandingScreen({ onEnter }) {
             )}
 
             <MagicButton
-              variant={backend === 'remote' ? 'violet' : 'gold'}
+              variant="gold"
               className="w-full py-4 text-base"
               onClick={mode === 'host' ? handleHost : handleJoin}
               disabled={loading}

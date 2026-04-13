@@ -9,7 +9,6 @@ import RevealScreen   from './screens/RevealScreen.jsx';
 import ResultsScreen  from './screens/ResultsScreen.jsx';
 import GameOverScreen from './screens/GameOverScreen.jsx';
 import * as firebaseGame from './utils/firebaseGame.js';
-import * as localGame from './utils/localGame.js';
 import { PHASE } from './utils/gameLogic.js';
 import { auth } from './firebase.js';
 
@@ -20,15 +19,12 @@ const pageVariants = {
 };
 
 export default function App() {
-  const [session, setSession] = useState(null); // { role, name, code, backend }
+  const [session, setSession] = useState(null); // { role, name, code }
   const [room, setRoom]       = useState(null);
   const [currentUid, setCurrentUid] = useState(null);
 
-  // Track UID — Firebase or local
+  // Track Firebase UID
   useEffect(() => {
-    const uid = localGame.getLocalUid();
-    setCurrentUid(uid);
-    // Also track Firebase UID if it comes in
     return auth.onAuthStateChanged(u => {
       if (u) setCurrentUid(u.uid);
     });
@@ -37,10 +33,9 @@ export default function App() {
   // Subscribe to room once session exists
   useEffect(() => {
     if (!session?.code) return;
-    const game = session.backend === 'remote' ? firebaseGame : localGame;
-    const unsub = game.subscribeRoom(session.code, data => setRoom(data));
+    const unsub = firebaseGame.subscribeRoom(session.code, data => setRoom(data));
     return unsub;
-  }, [session?.code, session?.backend]);
+  }, [session?.code]);
 
   function handleEnter(sess) {
     setSession(sess);
@@ -82,36 +77,35 @@ export default function App() {
       );
     }
 
-    const gameBackend = session.backend === 'remote' ? firebaseGame : localGame;
     switch (phase) {
       case PHASE.LOBBY:
         return (
           <motion.div key="lobby" {...pageVariants}>
-            <LobbyScreen room={room} code={code} isHost={isHost} currentUid={currentUid} game={gameBackend} />
+            <LobbyScreen room={room} code={code} isHost={isHost} currentUid={currentUid} game={firebaseGame} />
           </motion.div>
         );
       case PHASE.CLUE:
         return (
           <motion.div key="clue" {...pageVariants}>
-            <ClueScreen room={room} code={code} currentUid={currentUid} photos={photos} game={gameBackend} />
+            <ClueScreen room={room} code={code} currentUid={currentUid} photos={photos} game={firebaseGame} />
           </motion.div>
         );
       case PHASE.SUBMIT:
         return (
           <motion.div key="submit" {...pageVariants}>
-            <SubmitScreen room={room} code={code} currentUid={currentUid} photos={photos} game={gameBackend} />
+            <SubmitScreen room={room} code={code} currentUid={currentUid} photos={photos} game={firebaseGame} />
           </motion.div>
         );
       case PHASE.REVEAL:
         return (
           <motion.div key="reveal" {...pageVariants}>
-            <RevealScreen room={room} code={code} currentUid={currentUid} photos={photos} game={gameBackend} />
+            <RevealScreen room={room} code={code} currentUid={currentUid} photos={photos} game={firebaseGame} />
           </motion.div>
         );
       case PHASE.RESULTS:
         return (
           <motion.div key="results" {...pageVariants}>
-            <ResultsScreen room={room} code={code} currentUid={currentUid} photos={photos} isHost={isHost} game={gameBackend} />
+            <ResultsScreen room={room} code={code} currentUid={currentUid} photos={photos} isHost={isHost} game={firebaseGame} />
           </motion.div>
         );
       case PHASE.GAMEOVER:
