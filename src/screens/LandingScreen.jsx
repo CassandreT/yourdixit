@@ -93,7 +93,7 @@ export default function LandingScreen({ onEnter }) {
             <MagicButton variant="gold" onClick={() => { setMode('host'); setError(''); }} className="flex-1 py-4 text-base">
               ✦ Host a Game
             </MagicButton>
-            <MagicButton variant="ghost" onClick={() => { setMode('join'); setError(''); }} className="flex-1 py-4 text-base">
+            <MagicButton variant="gold" onClick={() => { setMode('join'); setError(''); }} className="flex-1 py-4 text-base">
               Join a Game
             </MagicButton>
           </div>

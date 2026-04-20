@@ -4,12 +4,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        base:    '#1a0f2e',
-        surface: '#2a1a0e',
-        surface2:'#231529',
-        accent:  '#f5c842',
-        violet:  '#c084fc',
-        dim:     '#c4a882',
+        base:    '#ffffff',
+        surface: '#f5f0e8',
+        surface2:'#f0eaf5',
+        accent:  '#d4a017',
+        violet:  '#7c3aed',
+        dim:     '#4a3728',
       },
       fontFamily: {
         display: ['"Cinzel Decorative"', 'serif'],

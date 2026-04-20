@@ -8,8 +8,8 @@
   html, body, #root {
     height: 100%;
     min-height: 100vh;
-    background: #1a0f2e;
-    color: #fef0c8;
+    background: #ffffff;
+    color: #1a0f2e;
     font-family: 'Crimson Text', Georgia, serif;
   }
 }
@@ -71,5 +71,5 @@
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #1a0f2e; }
+::-webkit-scrollbar-track { background: #f5f5f5; }
 ::-webkit-scrollbar-thumb { background: #f5c84255; border-radius: 3px; }
